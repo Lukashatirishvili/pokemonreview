@@ -13,11 +13,15 @@ namespace PokemonReviewApp.Controllers
     public class PokemonController : Controller
     {
         private readonly IPokemonRepository _pokemonRepository;
+        private readonly IReviewRepository _reviewRepository;
         private readonly IMapper _mapper;
 
-        public PokemonController(IPokemonRepository pokemonRepository, IMapper mapper)
+        public PokemonController(IPokemonRepository pokemonRepository,
+            IReviewRepository reviewRepository,
+            IMapper mapper)
         {
             _pokemonRepository = pokemonRepository;
+            _reviewRepository = reviewRepository;
             _mapper = mapper;
         }
 
@@ -40,7 +44,7 @@ namespace PokemonReviewApp.Controllers
         [ProducesResponseType(400)]
         public IActionResult GetPokemon(int pokeId)
         {
-            if (!_pokemonRepository.PokemonExist(pokeId))
+            if (!_pokemonRepository.PokemonExists(pokeId))
             {
                 return NotFound();
             }
@@ -60,7 +64,7 @@ namespace PokemonReviewApp.Controllers
         [ProducesResponseType(400)]
         public IActionResult GetPokemonRating(int pokeId)
         {
-            if (!_pokemonRepository.PokemonExist(pokeId))
+            if (!_pokemonRepository.PokemonExists(pokeId))
             {
                 return NotFound();
             }
@@ -111,6 +115,46 @@ namespace PokemonReviewApp.Controllers
             }
 
             return Ok("Successfully created");
+        }
+
+        [HttpPut("{pokeId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult UpdateCountry(
+            int pokeId, [FromQuery] int ownerId,
+            [FromQuery] int categoryId, PokemonDto updatedPokemon)
+        {
+            if (updatedPokemon == null)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (pokeId != updatedPokemon.Id)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (!_pokemonRepository.PokemonExists(pokeId))
+            {
+                return NotFound();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            var pokemonMap = _mapper.Map<Pokemon>(updatedPokemon);
+
+            if (!_pokemonRepository.UpdatePokemon(ownerId, categoryId, pokemonMap))
+            {
+                ModelState.AddModelError("", "Something went wrong updating owner");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
+
         }
     }
 }

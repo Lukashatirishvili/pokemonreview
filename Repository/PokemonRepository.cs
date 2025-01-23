@@ -41,7 +41,7 @@ namespace PokemonReviewApp.Repository
             return _context.Pokemon.OrderBy(p => p.Id).ToList();
         }
 
-        public bool PokemonExist(int pokeId)
+        public bool PokemonExists(int pokeId)
         {
             return _context.Pokemon.Any(p =>  p.Id == pokeId);
         }
@@ -76,6 +76,13 @@ namespace PokemonReviewApp.Repository
             var saved = _context.SaveChanges();
 
             return saved > 0 ? true : false;
+        }
+
+        public bool UpdatePokemon(int ownerId, int categoryId, Pokemon pokemon)
+        {
+            _context.Update(pokemon);
+
+            return Save();
         }
     }
 }
