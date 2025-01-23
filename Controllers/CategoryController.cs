@@ -18,7 +18,7 @@ namespace PokemonReviewApp.Controllers
         {
             _categoryRepository = categoryRepository;
             _mapper = mapper;
-            
+
 
         }
 
@@ -65,7 +65,7 @@ namespace PokemonReviewApp.Controllers
             var pokemons = _mapper.Map<List<PokemonDto>>(
                 _categoryRepository.GetPokemonByCategory(categoryId));
 
-            if(!ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
@@ -147,6 +147,31 @@ namespace PokemonReviewApp.Controllers
 
         }
 
+        [HttpDelete("{categoryId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult DeleteCategory(int categoryId)
+        {
+            if (!_categoryRepository.CategoryExists(categoryId))
+            {
+                return NotFound();
+            }
 
+            var categorytoDelete = _categoryRepository.GetCategory(categoryId);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            if (!_categoryRepository.DeleteCategory(categorytoDelete))
+            {
+                ModelState.AddModelError("", "Something went wrong deleting category");
+            }
+
+            return NoContent();
+
+        }
     }
 }

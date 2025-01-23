@@ -152,5 +152,31 @@ namespace PokemonReviewApp.Controllers
 
         }
 
+        [HttpDelete("{ownerId}")]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(404)]
+        public IActionResult DeleteCategory(int ownerId)
+        {
+            if (!_ownerRepository.OwnerExists(ownerId))
+            {
+                return NotFound();
+            }
+
+            var ownertoDelete = _ownerRepository.GetOwner(ownerId);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            if (!_ownerRepository.DeleteOwner(ownertoDelete))
+            {
+                ModelState.AddModelError("", "Something went wrong deleting Owner");
+            }
+
+            return NoContent();
+
+        }
     }
 }
